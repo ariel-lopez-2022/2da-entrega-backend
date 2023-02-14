@@ -102,7 +102,7 @@ const addProductToCart = async (req, res)=>{
       Cart.quantityTotal = Cart.quantityTotal - 1
       const total = Cart.products.reduce((acumulador,total)=> acumulador + (total.price*total.quantity),0)
       Cart.priceTotal = total
-      console.log(Cart)
+     
       const cartToUpdate = await BdCartManager.updateToCart(Cart)
       return res.status(201).json({
         msg:"Producto Eliminado",
@@ -133,9 +133,66 @@ const  emptyToCart = async(req, res)=>{
 
    
 }
+
+const UpdateToQuantityProduct = async(req,res)=> {
+  const { cid, pid,} = req.params;
+  const {quantyti: quantity} = req.body;
+
+   const Cart = await BdCartManager.getCartsId (cid);
+    if (!Cart){
+     return res.status(400).json({
+       msg:"Carrito no encontrado",
+       ok:false,
+      })  
+  }
+
+  const findProductTocart = Cart.products.find((prod)=> prod.id === pid)
+
+  if (!findProductTocart){
+    return res.status(400).json({
+      msg:"Producto no encontrado",
+      ok:false,
+     })  
+    }
+ 
+
+
+
+
+
+      if (quantity == undefined){
+      return res.status(400).json({
+        msg:"Debe Agregar Cantidad a Actualizar",
+        ok:false,
+       })  
+    } else {
+       if (quantity < 0){
+        return res.status(400).json({
+          msg:"La cantidad debe Ser Mayor o Igual a  0",
+          ok:false,
+         })  
+         
+       } else{
+        findProductTocart.quantity = quantity
+       }
+    }
+    
+    Cart.quantityTotal = Cart.products.reduce((acumulador,total)=> acumulador + quantity,0)
+    Cart.priceTotal = Cart.products.reduce((acumulador,total)=> acumulador + (total.price*total.quantity),0)
+    const cartToUpdate = await BdCartManager.updateToCart(Cart)
+    return res.status(201).json({
+     msg:"Cantidad de Producto Actualizada",
+       Cart: cartToUpdate
+    })  
+
+
+
+
+}
 module.exports = {
     bdgetCartId,
     addProductToCart,
     deleteProductToCart,
-    emptyToCart 
+    emptyToCart, 
+    UpdateToQuantityProduct
 }

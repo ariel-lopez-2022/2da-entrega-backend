@@ -8,5 +8,5 @@ router.get('/:cid', cartsControllerBd.bdgetCartId)
 router.post('/:cid/product/:pid', cartsControllerBd.addProductToCart);
 router.delete('/:cid/product/:pid', cartsControllerBd.deleteProductToCart);
 router.delete('/:cid', cartsControllerBd.emptyToCart);
-
+router.put('/:cid/product/:pid', cartsControllerBd.UpdateToQuantityProduct);
 module.exports = router;
