@@ -5,7 +5,9 @@ const BdProductManager = require("../dao/mongoManager/BdProductManager");
 const getProductsBd = async (req, res) => {
   const {limit, page, ...query} = req.query;
 
+
        const products = await BdProductManager.getProduct(page, limit, query);
+       console.log(products)
        
        if (products){
           res.json(products)      

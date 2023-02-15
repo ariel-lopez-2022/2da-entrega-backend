@@ -3,6 +3,9 @@ const CartManager = require('../dao/fsManager/CartManager')
 const Product = new ProductManager('./assets/product.json');
 const Carts = new CartManager(__dirname + '/../../assets/carts.json');
 
+
+
+
 const createCarts = async (req, res) => {
     const resp = await Carts.CreateCarts();
     res.json({ msg: "Carrito Creado con Excito ", id: resp })

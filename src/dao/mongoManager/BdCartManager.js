@@ -6,9 +6,12 @@ class BdCartsManager {
 		this.carts = []
 	}
 
-    CreateCarts = async (cart)=>{
+
+
+
+    Createcart = async ()=>{
         try{  
-            const Createcart = await cartsModel.create(cart);
+            const Createcart = await cartsModel.create();
             return Createcart
 
          } catch (error) {
