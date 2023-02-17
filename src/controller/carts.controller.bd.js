@@ -1,227 +1,220 @@
 const BdProductManager = require("../dao/mongoManager/BdProductManager");
 const BdCartManager = require("../dao/mongoManager/BdCartManager");
+const {mapProductCart, CalculateCartTotal} = require ('../utils/calculosCarts')
 
 
+const createCart = async (req,res)=>{
+  try {
+    const {products = []} = req.body
+   
+    let {productCartList, productsNotFound} = await mapProductCart(products)
+    const cart = {
+      priceTotal: CalculateCartTotal(productCartList),
+      quantityTotal:productCartList.length,
+      products:productCartList,
+    }
+    await BdCartManager.Create(cart)
+    return res.json({
+      msg:"Carrito Creado",
+      playload: {cart, productsNotFound},
+    })
 
+  } catch (error) {
+    return res.status(500).json({
+      msg:"Error",
+      playload: error.message,
+    })     
+  }
+  
+}
 
 const bdgetCartId = async (req, res) => {
-     const id = req.params.cid
-     const cart = await BdCartManager.getCartsId(id);
-     if (!cart){
-      return res.status(400).json({
-        msg:"Carrito Inexistente",
-        ok:false,
-       })  
-          
-   }else{
-        res.json(cart)   
-          
+  try {
+         const {cid} = req.params
+          const cart = await BdCartManager.getCartsId(cid);
+      if(cart){
+        return res.json({
+          msg:"Carrito Encontrado",
+          playload: cart,
+        })
+
+      }
+      
+    } catch (error) {
+      return res.status(500).json({
+        msg:"error",
+        playload:error.message,
+       })
+    }
+    
+
+}
+
+const  emptyToCart = async(req, res)=>{
+  try {
+    const {cid} = req.params;        
+    const Cart = await BdCartManager.getCartsId(cid);
+
+     Cart.products = [];
+     Cart.quantityTotal = 0
+    Cart.priceTotal = 0
+    const cartToUpdate = await BdCartManager.updateToCart(cid,Cart)
+    return res.json({
+       msg:"Carrito Vacio",
+     })
+  
+  } catch (error) {
+    return res.status(500).json({
+      msg:"error",
+      playload:error.message,
+     })
   }
 
 }
 
-const addProductToCart = async (req, res)=>{
-  const { cid, pid } = req.params;
-  const product = await BdProductManager.getProductId(pid);
- 
-  if (!product){
-    return res.status(400).json({
-      msg:"Producto no encontrado",
-      ok:false,
-     })  
-    }
-    const Cart = await BdCartManager.getCartsId (cid);
-    
-     if (!Cart){
-      const newCart = {
-         priceTotal: product.price,
-         quantityTotal:1,
-         products:[{id:product.id}] 
-       }
-      const CreateCart = await BdCartManager.addProductToCarts (newCart);
-       return res.status(200).json({
-         msg:"Carrito Creado",
-         cart:CreateCart,
-        })  
-
-      }
-    
-      const findProductTocart = Cart.products.find((prod)=> prod.id === pid) 
-     
-      if(!findProductTocart){
-        Cart.products.push({id:product.id})
-        Cart.priceTotal =  Cart.priceTotal+ product.price
-      }else{
-        findProductTocart.quantyti ++
-        Cart.priceTotal = Cart.products.reduce((acumulador,total)=> acumulador +(product.price * total.quantyti),0)
-             
-      }  
-
-        Cart.quantityTotal = Cart.quantityTotal + 1
-        const cartToUpdate = await BdCartManager.updateToCart(Cart)
-        return res.status(200).json({
-          msg:"Producto Agregado ",
-          cart:cartToUpdate,
-         })  
-      
-}
-
-
-  const deleteProductToCart = async (req, res)=>{
-    const { cid, pid } = req.params;        
-    const Cart = await BdCartManager.getCartsId(cid);
-    JSON.stringify(Cart)
-    const findProductTocart = Cart.products.find((prod)=> prod.id === pid) 
-    if(!findProductTocart){
+const deleteProductToCart = async (req, res)=>{
+   try {
+     const { cid, pid } = req.params;        
+     const Cart = await BdCartManager.getCartsId(cid);
+     if(!Cart){
         return res.status(400).json({
-        msg:"Producto no existe en el carrito",
-      })  
-    }else{
-      if (findProductTocart.quantyti === 1){
-        Cart.products = Cart.products.filter((prod)=> prod.id !== pid)
-      }else {
-          findProductTocart.quantyti -- 
+          msg:"Carrito no encontrado",
+          ok:false,
+        }) 
+     }
+    
+     const product = await BdProductManager.getProductId(pid);
+     if(!product){
+      return res.status(400).json({
+        msg:"Producto no encontrado en Base de Dato",
+        ok:false,
+      }) 
       }
-    }
-    const product = await BdProductManager.getProductId(pid);
-    Cart.quantityTotal = Cart.quantityTotal - 1
-    Cart.priceTotal = Cart.products.reduce((acumulador,total)=> acumulador + (total.price*total.quantyti),0)
-      const cartToUpdate = await BdCartManager.updateToCart(Cart)
-      return res.status(201).json({
-        msg:"Producto Eliminado",
-        Cart: cartToUpdate
-      })  
+     
+      
+     const findProductTocart = Cart.products.some(({product})=> product._id == pid) 
+    
+     if(!findProductTocart){
+         return res.status(400).json({
+         msg:"Producto no existe en el carrito",
+         ok:false,
+       })  
+      }
+        Cart.products = Cart.products.filter(({product})=> product._id != pid)
+        Cart.quantityTotal = Cart.products.length
+        Cart.priceTotal = CalculateCartTotal(Cart.products)
+         await BdCartManager.updateToCart(cid,Cart)
+          return res.status(201).json({
+            msg:"Producto Eliminado",
+            Cart: Cart
+          })  
+       
+   } catch (error) {
+        return res.status(500).json({
+         msg:"error",
+         playload:error.message,
+        })
+   }
 }  
 
 
-const  emptyToCart = async(req, res)=>{
-  const {cid} = req.params;        
-  const Cart = await BdCartManager.getCartsId(cid);
-
-  if (!Cart){
-      return res.status(400).json({
-      msg:"Carrito Inexistente",
-    })  
-  }
-
-      Cart.products = [];
-      Cart.quantityTotal = 0
-      Cart.priceTotal = 0
-      const cartToUpdate = await BdCartManager.updateToCart(Cart)
-      return res.status(201).json({
-        msg:"Carrito Vaciado",
-        Cart: cartToUpdate
-      })  
-      
-
-   
-}
-
 const UpdateToQuantityProduct = async(req,res)=> {
+try {
   const { cid, pid,} = req.params;
-  const {quantyti: quantity} = req.body;
-  const product = await BdProductManager.getProductId(pid);
-
-   const Cart = await BdCartManager.getCartsId (cid);
+  const {quantity = 0} = req.body;
+  
+  const Cart = await BdCartManager.getCartsId (cid);
     if (!Cart){
      return res.status(400).json({
        msg:"Carrito no encontrado",
        ok:false,
       })  
   }
-
-  const findProductTocart = Cart.products.find((prod)=> prod.id === pid)
-
-  if (!findProductTocart){
+  const product = await BdProductManager.getProductId(pid);
+  if (!product){
     return res.status(400).json({
-      msg:"Producto no encontrado",
+      msg:"Producto no encontrado en base de Datos",
+      ok:false,
+     })  
+ }
+   const findProductTocart = Cart.products.findIndex(({product})=> product._id == pid)
+  
+  if (findProductTocart === -1){
+    return res.status(400).json({
+      msg:"Producto no encontrado en el Carrito",
       ok:false,
      })  
     }
- 
-      if (quantity == undefined){
-      return res.status(400).json({
-        msg:"Debe Agregar Cantidad a Actualizar",
-        ok:false,
-       })  
-    } else {
-       if (quantity < 0){
-        return res.status(400).json({
-          msg:"La cantidad debe Ser Mayor o Igual a  0",
-          ok:false,
-         })  
-         
-       } else{
-            findProductTocart.quantyti = quantity
-          if (findProductTocart.quantyti > quantity){
-               Cart.priceTotal = Cart.priceTotal - (product.price * findProductTocart.quantyti)   
-          }else{
-            Cart.priceTotal = Cart.priceTotal + (product.price * findProductTocart.quantyti)
-          }
-        
-
-       }
-    }
+    console.log(quantity)
+    console.log(Cart.products[findProductTocart].quantity += quantity) 
     
-    Cart.quantityTotal = Cart.products.reduce((acumulador,total)=> acumulador + total.quantyti,0)
-    //Cart.priceTotal = Cart.products.reduce((acumulador,total)=> acumulador + (product.price*total.quantity),0)
-    const cartToUpdate = await BdCartManager.updateToCart(Cart)
-    return res.status(201).json({
-     msg:"Cantidad de Producto Actualizada",
-       Cart: cartToUpdate
-    })  
+
+   Cart.priceTotal = CalculateCartTotal(Cart.products)
+   await BdCartManager.updateToCart(cid,Cart)
+   return res.status(201).json({
+    msg:"Cantidad Actualizada",
+    Cart: Cart
+  })  
+  
+  
+} catch (error) {
+  return res.status(500).json({
+    msg:"error",
+    playload:error.message,
+   })
+}
 
 }
 
 
 const UpdateToProductsToCart = async(req, res)=>{
-  const {cid} = req.params
-  const body = req.body
-  console.log(body)
-  console.log (body.id)
 
-  const Cart = await BdCartManager.getCartsId(cid);
-  if (!Cart){
-    return res.status(400).json({
-    msg:"Carrito Inexistente",
-  })  
-}
-
-    Cart.products = [];
-    Cart.quantityTotal = 0
-    Cart.priceTotal = 0
-
-    const product = await BdProductManager.getProductId(body.id);
- 
-    if (!product){
+  try {
+    const {cid} = req.params
+    const Cart = await BdCartManager.getCartsId(cid);
+    if (!Cart){
       return res.status(400).json({
-        msg:"Producto no encontrado",
-        ok:false,
-       })  
-      }
+      msg:"Carrito Inexistente",
+      ok:false,
+    })  
+  }
+  const {products = []} = req.body
+  let {productCartList, productsNotFound} = await mapProductCart(products)
+ 
+  const upateCart = {
+    priceTotal: CalculateCartTotal(productCartList),
+    quantityTotal:productCartList.length,
+    products:productCartList,
+  }
+  await BdCartManager.updateToCart(cid, upateCart )
 
-      Cart.products.push({id:product.id, quantyti:body.quantyti})
-      Cart.quantityTotal = body.quantyti
-      Cart.priceTotal = (product.price*body.quantyti)
-  
-      const cartToUpdate = await BdCartManager.updateToCart(Cart)
-      return res.status(201).json({
-        msg:"Carrito Actualizado",
-        Cart: cartToUpdate
-      })  
+  return res.json({
+    msg: "Carrito Actualizado",
+    payload: { productCartList, productsNotFound },
+    carts: Cart
+  })
 
+  } catch (error) {
+    return res.status(500).json({
+			msg: 'Error',
+			payload: error.message,
+		})
+  }
 }
 
+const addProductToCart = async(req,res)=>{
+  const 
+  const {products = []} = req.body
 
-
-
+}
 
 module.exports = {
-   
+    createCart, 
     bdgetCartId,
-    addProductToCart,
     deleteProductToCart,
     emptyToCart, 
     UpdateToQuantityProduct,
-    UpdateToProductsToCart
+    UpdateToProductsToCart,
+    addProductToCart 
 }
+

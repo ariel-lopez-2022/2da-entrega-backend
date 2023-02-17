@@ -1,76 +1,109 @@
 const BdProductManager = require("../dao/mongoManager/BdProductManager");
 
-
-
 const getProductsBd = async (req, res) => {
-  const {limit, page, ...query} = req.query;
+  try {
+    const { limit, page, sort, ...query } = req.query;
+    const products = await BdProductManager.getProduct(page, limit, sort, query);
+    return res.json({
+      status: "Sucess",
+      playload: products,
+    })
 
+  } catch (error) {
+    return res.json({
+      status: "Error",
+      playload: "error al intentar mostrar productos",
+    })
+  }
 
-       const products = await BdProductManager.getProduct(page, limit, query);
-       console.log(products)
-       
-       if (products){
-          res.json(products)      
-       }else{
-        res.json(products)  
-
-       }
-
-     
 };
 
-const addProductBd = async (req, res)=>{
-  const product = req.body;
-    const newproduct = await BdProductManager.addProduct(product);
-    if (newproduct){
-      res.json(newproduct)    
-    }else{
-      res.json(newproduct)
-          
-    }
-}
 
+const getProductIdBd = async (req, res) => {
 
-const getProductIdBd = async (req, res)=>{
-  const id = req.params.pid 
-  const getProductId = await BdProductManager.getProductId(id);
-  if (getProductId){
-    res.json(getProductId)      
-  }else{
-    res.json(getProductId)
+  try {
+    const id = req.params.pid
+    const getProductId = await BdProductManager.getProductId(id);
+    return res.json({
+      status: "Sucess",
+      playload: getProductId,
+    })
+  } catch (error) {
+    return res.json({
+      status: "Error",
+      playload: "error al obtener el producto",
+    })
   }
 
 
 
+
+
+
+
+
 }
 
-const UpdateProductBd = async (req, res)=>{
-  const id = req.params.pid 
-  const product = req.body
-  const UpdateProductId = await BdProductManager.UpdateProduct(id, product);
-  if (UpdateProductId){
-     res.json(UpdateProductId)      
-  }else{
-    res.json(UpdateProductId)  
+const addProductBd = async (req, res) => {
+  try {
+      const product = req.body;
+      const newproduct = await BdProductManager.addProduct(product);
+      return res.json({
+        status: "Sucess",
+        playload:newproduct,
+      })
+  } catch (error) {
+    return res.json({
+      status: "error",
+      playload:"error al crear producto",
+    })
   }
+}
+
+
+
+
+const UpdateProductBd = async (req, res) => {
   
-
+  try {
+    const id = req.params.pid
+    const product = req.body
+    const UpdateProductId = await BdProductManager.UpdateProduct(id, product);
+    return res.json({
+      status: "Sucess",
+      playload:UpdateProductId,
+    })
+    
+  } catch (error) {
+    return res.json({
+      status: "error",
+      playload:"error al actualizar producto",
+    })
+    
+  }
 }
 
-const deleteProductBd = async (req, res)=>{
-  const id = req.params.pid 
-    const deleteproduct = await BdProductManager.DeleteProductId(id);
-    if (deleteproduct){
-      res.json(deleteproduct)      
-    }else{
-      res.json(deleteproduct)
-    }
+const deleteProductBd = async (req, res) => {
+ try {
+   const id = req.params.pid
+   const deleteproduct = await BdProductManager.DeleteProductId(id);
+   return res.json({
+    status: "Sucess",
+    playload: deleteproduct,
+  })
+ } catch (error) {
+  return res.json({
+    status: "erorr",
+    playload: "error al eliminar producto",
+  }) 
+ }
+ 
 }
 
-module.exports ={
-    getProductsBd, 
-    getProductIdBd,    
-    addProductBd,
-    UpdateProductBd,     
-    deleteProductBd,
+module.exports = {
+  getProductsBd,
+  getProductIdBd,
+  addProductBd,
+  UpdateProductBd,
+  deleteProductBd,
 }

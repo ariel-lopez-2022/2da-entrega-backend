@@ -7,7 +7,7 @@ class ChatsManager {
         
         try {
             const saveMessage = await chatModel.create(message)
-            console.log(saveMessage)
+          
              return saveMessage
          } catch (error) {
 
@@ -36,4 +36,4 @@ class ChatsManager {
 
 }
 
-module.exports = ChatsManager
+module.exports =  ChatsManager

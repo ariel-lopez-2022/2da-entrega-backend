@@ -1,53 +1,22 @@
 const cartsModel = require('../models/carts.model')
-const productModel = require('../models/products.model')
+
 
 class BdCartsManager {
-	constructor() {
-		this.carts = []
-	}
+	  getCartsId = async (id) => {
+      return await cartsModel.findById(id).populate('products.product');
+    }
 
-
-
-
-    Createcart = async ()=>{
-        try{  
-            const Createcart = await cartsModel.create();
-            return Createcart
-
-         } catch (error) {
-           return {msg:"Error al crear Carritos"}
-           
-         }   
+    Create = async (carts)=>{
+            return await cartsModel.create(carts);
     } 	
 
-	getCartsId = async (id) => {
-        
-        try{  
-             const cart = await cartsModel.findById(id);
-             return cart
-      
-        } catch (error) {
-           return undefined
-         }   
-	}
-
-   
     addProductToCarts = async (newCart) => {
-        const Createcart = await cartsModel.create(newCart);
-        return Createcart
+     return await cartsModel.create(newCart);
     }
 
-    updateToCart = async(cart)=>{
-        const cartUpdate = await cartsModel.findByIdAndUpdate(cart.id, cart, {
-            new:true
-        })
-        return cartUpdate
-
+    updateToCart = async(cid,cart)=>{
+     
+      return await cartsModel.updateOne({_id:cid},cart)
     }
-
-    
-
 }
-
-
 module.exports = new BdCartsManager ;
