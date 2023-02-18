@@ -145,13 +145,10 @@ try {
       ok:false,
      })  
     }
-    console.log(quantity)
     console.log(Cart.products[findProductTocart].quantity += quantity) 
-    
-
-   Cart.priceTotal = CalculateCartTotal(Cart.products)
-   await BdCartManager.updateToCart(cid,Cart)
-   return res.status(201).json({
+    Cart.priceTotal = CalculateCartTotal(Cart.products)
+    await BdCartManager.updateToCart(cid,Cart)
+    return res.status(201).json({
     msg:"Cantidad Actualizada",
     Cart: Cart
   })  
@@ -201,13 +198,6 @@ const UpdateToProductsToCart = async(req, res)=>{
 		})
   }
 }
-
-const addProductToCart = async(req,res)=>{
-  const 
-  const {products = []} = req.body
-
-}
-
 module.exports = {
     createCart, 
     bdgetCartId,
@@ -215,6 +205,5 @@ module.exports = {
     emptyToCart, 
     UpdateToQuantityProduct,
     UpdateToProductsToCart,
-    addProductToCart 
 }
 

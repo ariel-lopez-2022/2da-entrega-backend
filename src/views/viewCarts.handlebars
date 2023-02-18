@@ -6,17 +6,19 @@
           <span class="col-2 ">Cantidad</span>
           <span class="col-2 d-none d-md-block">Precio</span>
         </div>
+            
             {{#each Carts}}
                  <div class=" row mt-4  d-flex justify-content-around text-center align-items-center">
-                    <td class="col-2 text ">{{this.title}}</td>
-                    <td class="col-2 text ">{{this.description}}</td>
-                    <td class="col-2 text ">{{this.quantyti}}</td>
-                     <td class="col-2 text ">{{this.price}}</td>
+                    <td class="col-2 text ">{{Carts.title}}</td>
+                    <td class="col-2 text "></td>
+                    <td class="col-2 text "></td>
+                     <td class="col-2 text "></td>
                     </td>
              {{/each}}       
                 </div>
             <div class="descripcion row mt-4 d-flex justify-content-between align-items-center ">
               <h5 class="col-4 text-center total p-2 m-0  " > Total ${{priceTotal}}</h5>
+              <h5 class="col-4 text-center total p-2 m-0  " > Cantidad Total: {{quantityTotal}}</h5>
             </div>
         </section>
 

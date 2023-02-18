@@ -1,20 +1,18 @@
 const BdProductManager = require("../dao/mongoManager/BdProductManager");
 
-const views = async (req, res) => {
-   
-    const {limit, page, ...query} = req.query;
+const viewsBd = async (req, res) => {
+    const {limit, page, sort, ...query} = req.query;
+    const products= await BdProductManager.getProduct(page, limit,sort, query);
     
-    const products= await BdProductManager.getProduct(page, limit, query);
+
     const product = products.docs.map((product) => ({
         title:product.title,
         description:product.description,
-        code:product.code,
+        category:product.category,
         price:product.price,
         stock:product.stock
-    
     })) 
-   
-
+     
     res.render("viewProduct", {
        products: product,
        totalPage: products.totalPages,
@@ -27,5 +25,5 @@ const views = async (req, res) => {
 
 
 module.exports ={
-    views,
+    viewsBd,
 }

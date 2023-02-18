@@ -6,7 +6,7 @@ class BdProductManager {
   
 }
   getProduct = async (page = 1, limit = 10 , sort = '', query ={}) => {
-      return  await productModel.paginate(query, { page, limit, sort: {price :` ${sort}` }});
+      return  await productModel.paginate(query, { page, limit, sort:{price:sort}});
   }
 
   getProductId = async (id) => {
