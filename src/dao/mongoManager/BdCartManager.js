@@ -3,7 +3,7 @@ const cartsModel = require('../models/carts.model')
 
 class BdCartsManager {
 	  getCartsId = async (id) => {
-      return await cartsModel.findById(id).populate('products.product');
+      return await cartsModel.findById(id).lean().populate('products.product');
        
     }
 

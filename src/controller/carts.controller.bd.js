@@ -1,16 +1,14 @@
 const BdProductManager = require("../dao/mongoManager/BdProductManager");
 const BdCartManager = require("../dao/mongoManager/BdCartManager");
-const {mapProductCart, CalculateCartTotal} = require ('../utils/calculosCarts')
-
+const {mapProductCart,CalculateQuantityTotal, CalculateCartTotal } = require ('../utils/calculosCarts')
 
 const createCart = async (req,res)=>{
   try {
     const {products = []} = req.body
-   
     let {productCartList, productsNotFound} = await mapProductCart(products)
     const cart = {
       priceTotal: CalculateCartTotal(productCartList),
-      quantityTotal:productCartList.length,
+      quantityTotal: CalculateQuantityTotal(productCartList),
       products:productCartList,
     }
     await BdCartManager.Create(cart)
@@ -58,7 +56,7 @@ const  emptyToCart = async(req, res)=>{
      Cart.products = [];
      Cart.quantityTotal = 0
     Cart.priceTotal = 0
-    const cartToUpdate = await BdCartManager.updateToCart(cid,Cart)
+    await BdCartManager.updateToCart(cid,Cart)
     return res.json({
        msg:"Carrito Vacio",
      })
@@ -101,7 +99,7 @@ const deleteProductToCart = async (req, res)=>{
        })  
       }
         Cart.products = Cart.products.filter(({product})=> product._id != pid)
-        Cart.quantityTotal = Cart.products.length
+        Cart.quantityTotal = CalculateQuantityTotal(productCartList)
         Cart.priceTotal = CalculateCartTotal(Cart.products)
          await BdCartManager.updateToCart(cid,Cart)
           return res.status(201).json({
@@ -145,7 +143,7 @@ try {
       ok:false,
      })  
     }
-    console.log(Cart.products[findProductTocart].quantity += quantity) 
+    Cart.products[findProductTocart].quantity += quantity 
     Cart.priceTotal = CalculateCartTotal(Cart.products)
     await BdCartManager.updateToCart(cid,Cart)
     return res.status(201).json({
@@ -180,7 +178,7 @@ const UpdateToProductsToCart = async(req, res)=>{
  
   const upateCart = {
     priceTotal: CalculateCartTotal(productCartList),
-    quantityTotal:productCartList.length,
+    quantityTotal:CalculateQuantityTotal(productCartList),
     products:productCartList,
   }
   await BdCartManager.updateToCart(cid, upateCart )

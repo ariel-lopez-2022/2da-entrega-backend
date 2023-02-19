@@ -3,7 +3,9 @@ const BdProductManager = require('../dao/mongoManager/BdProductManager')
 const CalculateCartTotal = (products) =>{
     return products.reduce((acc, prod )=> acc + prod.price * prod.quantity,0)
 }
-
+const CalculateQuantityTotal = (products) =>{
+    return products.reduce((acc, prod )=> acc + prod.quantity ,0)
+}
 
 const mapProductCart = async (products)=>{
 let productCartList =[]
@@ -40,5 +42,5 @@ let productsNotFound = []
 module.exports ={
     CalculateCartTotal,
     mapProductCart,
-   
+    CalculateQuantityTotal
 }
