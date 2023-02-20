@@ -17,7 +17,7 @@ const viewsBd = async (req, res) => {
        products: product,
        totalPage: products.totalPages,
        page:products.page,
-       prev: product.hasPrevPage,
+       prev: products.hasPrevPage,
        next: products.hasNextPage
     }
              
